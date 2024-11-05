@@ -7,10 +7,15 @@ export default function StoreInterior({ hasEntered, setHasEntered }) {
   const interiorRef = useRef();
   const videoRef = useRef();
   const { camera, gl } = useThree();
-  const { scene: bikeModel } = useGLTF("/peloton.glb");
-  const { scene: sofaModel } = useGLTF("/Sofa_main.glb");
-  const { scene: tableModel } = useGLTF("/table.glb");
-  const { scene: lampModel } = useGLTF("/lamp.glb");
+  const pelotonPath = process.env.PUBLIC_URL + "/peloton.glb";
+  const sofaPath = process.env.PUBLIC_URL + "/Sofa_main.glb";
+  const tablePath = process.env.PUBLIC_URL + "/table.glb";
+  const lampPath = process.env.PUBLIC_URL + "/lamp.glb";
+
+  const { scene: bikeModel } = useGLTF(pelotonPath);
+  const { scene: sofaModel } = useGLTF(sofaPath);
+  const { scene: tableModel } = useGLTF(tablePath);
+  const { scene: lampModel } = useGLTF(lampPath);
   const [videoTexture, setVideoTexture] = useState(null);
 
   useEffect(() => {
