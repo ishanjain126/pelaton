@@ -31,15 +31,18 @@ export default function StoreInterior({ hasEntered, setHasEntered }) {
   }, [bikeModel]);
 
   // Load wooden texture
-  const woodTexture = useLoader(THREE.TextureLoader, "/wall_texture.jpg"); // Add a wood texture in public folder
+  const woodTexture = useLoader(
+    THREE.TextureLoader,
+    `${process.env.PUBLIC_URL}/wall_texture.jpg`
+  );
   woodTexture.wrapS = woodTexture.wrapT = THREE.RepeatWrapping;
   woodTexture.repeat.set(4, 4);
 
   // Wooden floor
   const woodenFloorTexture = useLoader(
     THREE.TextureLoader,
-    "/wooden_floor.jpg"
-  ); // Add a wood texture in public folder
+    `${process.env.PUBLIC_URL}/wooden_floor.jpg`
+  );
   woodTexture.wrapS = woodTexture.wrapT = THREE.RepeatWrapping;
   woodTexture.repeat.set(4, 4);
 
