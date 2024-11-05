@@ -62,7 +62,7 @@ export default function StoreInterior({ hasEntered, setHasEntered }) {
     video.crossOrigin = "anonymous";
     video.loop = true;
     video.playsInline = true;
-    video.muted = true;
+    video.muted = false;
 
     // Create and configure texture
     const texture = new THREE.VideoTexture(video);
