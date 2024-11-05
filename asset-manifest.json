@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/peloton/static/css/main.e6c13ad2.css",
+    "main.js": "/peloton/static/js/main.d5f331ac.js",
+    "index.html": "/peloton/index.html",
+    "main.e6c13ad2.css.map": "/peloton/static/css/main.e6c13ad2.css.map",
+    "main.d5f331ac.js.map": "/peloton/static/js/main.d5f331ac.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.d5f331ac.js"
+  ]
+}
