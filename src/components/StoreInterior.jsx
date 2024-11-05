@@ -58,7 +58,7 @@ export default function StoreInterior({ hasEntered, setHasEntered }) {
   // Video texture setup
   useEffect(() => {
     const video = document.createElement("video");
-    video.src = "/pelotonbike.mp4";
+    video.src = `${process.env.PUBLIC_URL}/pelotonbike.mp4`;
     video.crossOrigin = "anonymous";
     video.loop = true;
     video.playsInline = true;
@@ -303,7 +303,7 @@ export default function StoreInterior({ hasEntered, setHasEntered }) {
   );
 }
 
-useGLTF.preload("/peloton.glb");
-useGLTF.preload("/Sofa_main.glb");
-useGLTF.preload("/table.glb");
-useGLTF.preload("/lamp.glb");
+useGLTF.preload(`${process.env.PUBLIC_URL}/peloton.glb`);
+useGLTF.preload(`${process.env.PUBLIC_URL}/Sofa_main.glb`);
+useGLTF.preload(`${process.env.PUBLIC_URL}/table.glb`);
+useGLTF.preload(`${process.env.PUBLIC_URL}/lamp.glb`);
