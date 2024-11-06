@@ -1,4 +1,4 @@
-import { useRef, useEffect, useMemo, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useThree, useLoader, useFrame } from "@react-three/fiber";
 import { useGLTF, Text3D, Center, Html } from "@react-three/drei";
 import * as THREE from "three";
@@ -6,7 +6,15 @@ import * as THREE from "three";
 export default function StoreInterior({ hasEntered, setHasEntered }) {
   const interiorRef = useRef();
   const videoRef = useRef();
+  const [hasInteracted, setHasInteracted] = useState(false);
+  const [showPlayButton, setShowPlayButton] = useState(true);
+  const [isHovering, setIsHovering] = useState(false);
+  const [isPaused, setIsPaused] = useState(true);
+
+  const hoverTimeoutRef = useRef(null);
+
   const { camera, gl } = useThree();
+
   const pelotonPath = process.env.PUBLIC_URL + "/peloton.glb";
   const sofaPath = process.env.PUBLIC_URL + "/Sofa_main.glb";
   const tablePath = process.env.PUBLIC_URL + "/table.glb";
@@ -56,12 +64,52 @@ export default function StoreInterior({ hasEntered, setHasEntered }) {
   //   }, []);
 
   // Video texture setup
+  // useEffect(() => {
+  //   const video = document.createElement("video");
+  //   video.src = `${process.env.PUBLIC_URL}/pelotonbike.mp4`;
+  //   video.crossOrigin = "anonymous";
+  //   video.loop = true;
+  //   video.playsInline = true;
+  //   video.muted = true;
+
+  //   // Create and configure texture
+  //   const texture = new THREE.VideoTexture(video);
+  //   texture.minFilter = THREE.LinearFilter;
+  //   texture.magFilter = THREE.LinearFilter;
+  //   texture.format = THREE.RGBAFormat;
+  //   texture.colorSpace = THREE.SRGBColorSpace;
+  //   texture.generateMipmaps = false;
+
+  //   // Set video texture
+  //   setVideoTexture(texture);
+  //   videoRef.current = video;
+
+  //   // Start playing
+  //   video
+  //     .play()
+  //     .then(() => {
+  //       console.log("Video playing");
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error playing video:", error);
+  //     });
+
+  //   // Cleanup
+  //   return () => {
+  //     video.pause();
+  //     video.src = "";
+  //     video.load();
+  //     texture.dispose();
+  //   };
+  // }, []);
+
   useEffect(() => {
     const video = document.createElement("video");
     video.src = `${process.env.PUBLIC_URL}/pelotonbike.mp4`;
     video.crossOrigin = "anonymous";
     video.loop = true;
     video.playsInline = true;
+    // Remove muted property to allow sound
 
     // Create and configure texture
     const texture = new THREE.VideoTexture(video);
@@ -71,28 +119,30 @@ export default function StoreInterior({ hasEntered, setHasEntered }) {
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.generateMipmaps = false;
 
-    // Set video texture
     setVideoTexture(texture);
     videoRef.current = video;
 
-    // Start playing
-    video
-      .play()
-      .then(() => {
-        console.log("Video playing");
-      })
-      .catch((error) => {
-        console.error("Error playing video:", error);
-      });
+    // Only try to play if user has interacted
+    if (hasInteracted) {
+      video
+        .play()
+        .then(() => {
+          console.log("Video playing with sound");
+          setShowPlayButton(false);
+        })
+        .catch((error) => {
+          console.error("Error playing video:", error);
+          setShowPlayButton(true);
+        });
+    }
 
-    // Cleanup
     return () => {
       video.pause();
       video.src = "";
       video.load();
       texture.dispose();
     };
-  }, []);
+  }, [hasInteracted]);
 
   useFrame(() => {
     if (videoTexture) {
@@ -209,7 +259,28 @@ export default function StoreInterior({ hasEntered, setHasEntered }) {
         {/* TV */}
         <group position={[0, 6, -5.7]}>
           {/* Moved slightly forward */}
-          {/* TV Frame */}
+          {/* TV Frame
+          // <mesh>
+          //   <boxGeometry args={[10.4, 5.4, 0.3]} />
+          //   <meshStandardMaterial
+          //     color="black"
+          //     metalness={0.5}
+          //     roughness={0.3}
+          //   />
+          // </mesh>
+          {/* Video Screen */}
+          {/* <mesh position={[0, 0, 0.2]}>
+            <planeGeometry args={[10, 5]} />
+            {videoTexture ? (
+              <meshBasicMaterial
+                map={videoTexture}
+                side={THREE.DoubleSide}
+                toneMapped={false}
+              />
+            ) : (
+              <meshBasicMaterial color="black" />
+            )}
+          </mesh>  */}
           <mesh>
             <boxGeometry args={[10.4, 5.4, 0.3]} />
             <meshStandardMaterial
@@ -218,8 +289,37 @@ export default function StoreInterior({ hasEntered, setHasEntered }) {
               roughness={0.3}
             />
           </mesh>
+
           {/* Video Screen */}
-          <mesh position={[0, 0, 0.2]}>
+          {/* <mesh position={[0, 0, 0.2]}>
+            <planeGeometry args={[10, 5]} />
+            {videoTexture ? (
+              <meshBasicMaterial
+                map={videoTexture}
+                side={THREE.DoubleSide}
+                toneMapped={false}
+              />
+            ) : (
+              <meshBasicMaterial color="black" />
+            )}
+          </mesh> */}
+          <mesh
+            position={[0, 0, 0.2]}
+            onPointerEnter={() => {
+              if (hoverTimeoutRef.current) {
+                clearTimeout(hoverTimeoutRef.current);
+              }
+              setIsHovering(true);
+            }}
+            onPointerLeave={() => {
+              if (hoverTimeoutRef.current) {
+                clearTimeout(hoverTimeoutRef.current);
+              }
+              hoverTimeoutRef.current = setTimeout(() => {
+                setIsHovering(false);
+              }, 300); // Add a small delay before hiding
+            }}
+          >
             <planeGeometry args={[10, 5]} />
             {videoTexture ? (
               <meshBasicMaterial
@@ -231,6 +331,155 @@ export default function StoreInterior({ hasEntered, setHasEntered }) {
               <meshBasicMaterial color="black" />
             )}
           </mesh>
+
+          {/* Play/Pause Button Overlay with improved transitions */}
+          {/* Play/Pause Button Overlay */}
+          {(showPlayButton || (isHovering && hasInteracted)) && (
+            <Html position={[0, 0, 0.3]} center>
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!hasInteracted) {
+                    setHasInteracted(true);
+                  }
+                  if (videoRef.current) {
+                    if (isPaused) {
+                      videoRef.current
+                        .play()
+                        .then(() => {
+                          setShowPlayButton(false);
+                          setIsPaused(false);
+                        })
+                        .catch((error) => {
+                          console.error("Error playing video:", error);
+                          setShowPlayButton(true);
+                        });
+                    } else {
+                      videoRef.current.pause();
+                      setIsPaused(true);
+                    }
+                  }
+                }}
+                style={{
+                  width: "80px",
+                  height: "80px",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  cursor: "pointer",
+                  transition: "opacity 0.3s ease",
+                  opacity: isHovering || !hasInteracted ? "1" : "0",
+                  backgroundColor: "rgba(0, 0, 0, 0.001)",
+                  borderRadius: "50%",
+                }}
+              >
+                <img
+                  src={`${process.env.PUBLIC_URL}/${
+                    isPaused ? "play-button.png" : "pause-button.png"
+                  }`}
+                  style={{
+                    width: "3rem",
+                    height: "3rem",
+                    transition: "transform 0.3s ease",
+                    filter: "drop-shadow(0px 0px 10px rgba(0,0,0,0.5))",
+                    // pointerEvents: "none"
+                  }}
+                  alt={isPaused ? "Play Video" : "Pause Video"}
+                />
+              </div>
+            </Html>
+          )}
+
+          {/* Play Button Overlay */}
+          {/* {showPlayButton && (
+            <Html position={[0, 0, 0.3]} center>
+              <img
+                src={`${process.env.PUBLIC_URL}/play-button.png`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setHasInteracted(true);
+                  if (videoRef.current) {
+                    videoRef.current
+                      .play()
+                      .then(() => {
+                        console.log("Video playing after button click");
+                        setShowPlayButton(false);
+                      })
+                      .catch((error) => {
+                        console.error("Error playing video:", error);
+                        setShowPlayButton(true);
+                      });
+                  }
+                }}
+                style={{
+                  width: "3rem",
+                  height: "3rem",
+                  cursor: "pointer",
+                  transition: "transform 0.3s ease",
+                  filter: "drop-shadow(0px 0px 10px rgba(0,0,0,0.5))",
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = "scale(1.1)";
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = "scale(1)";
+                }}
+                alt="Play Video"
+              />
+            </Html>
+          )} */}
+
+          {/* {(showPlayButton || (isHovering && hasInteracted)) && (
+            <Html position={[0, 0, 0.3]} center>
+              <img
+                src={`${process.env.PUBLIC_URL}/${
+                  isPaused ? "play-button.png" : "pause-button.png"
+                }`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!hasInteracted) {
+                    setHasInteracted(true);
+                  }
+                  if (videoRef.current) {
+                    if (isPaused) {
+                      videoRef.current
+                        .play()
+                        .then(() => {
+                          console.log("Video playing");
+                          setShowPlayButton(false);
+                          setIsPaused(false);
+                        })
+                        .catch((error) => {
+                          console.error("Error playing video:", error);
+                          setShowPlayButton(true);
+                        });
+                    } else {
+                      videoRef.current.pause();
+                      setIsPaused(true);
+                    }
+                  }
+                }}
+                style={{
+                  width: "64px", // Adjust size as needed
+                  height: "64px",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                  filter: "drop-shadow(0px 0px 10px rgba(0,0,0,0.5))",
+                  opacity: isHovering || !hasInteracted ? "1" : "0.8",
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = "scale(1.1)";
+                  e.currentTarget.style.opacity = "1";
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = "scale(1)";
+                  e.currentTarget.style.opacity = "0.8";
+                }}
+                alt={isPaused ? "Play Video" : "Pause Video"}
+              />
+            </Html>
+          )} */}
+
           {/* Add a subtle ambient light near the TV */}
           <pointLight
             position={[0, 0, 2]}
